@@ -21,6 +21,7 @@ services:
     environment:
       - POSTGRES_HOST=db
       - POSTGRES_DB=not_nextcloud
+      - TRUSTED_DOMAINS=${HOST}
     env_file:
       - .env
     depends_on:
