@@ -6,12 +6,9 @@ git clone repository
 cd repository
 Create a .env file with
 ```
-POSTGRES_PASSWORD=
 POSTGRES_USER=
-POSTGRES_DB=
-NEXTCLOUD_ADMIN_USER=
-NEXTCLOUD_ADMIN_PASSWORD=
-DOMAIN_NAME=
+POSTGRES_PASSWORD=
+HOST=
 EMAIL=
 ```
 
