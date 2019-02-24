@@ -20,7 +20,7 @@ services:
       - nextcloud:/var/www/html
     environment:
       - POSTGRES_HOST=db
-      - POSTGRES_DB=not_nextcloud
+      - POSTGRES_DB=nextcloud
       - TRUSTED_DOMAINS=${HOST}
     env_file:
       - .env
