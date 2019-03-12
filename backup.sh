@@ -48,10 +48,10 @@ nextcloudFileDir="/var/lib/docker/volumes/nextcloud_nextcloud"
 webserverServiceName="nginx"
 
 # TODO: Your Nextcloud database name
-nextcloudDatabase="nextcloud_db"
+nextcloudDatabase="$POSTGRES_DB"
 
 # TODO: Your Nextcloud database user
-dbUser="nextcloud_db_user"
+dbUser="$POSTGRES_USER"
 
 # TODO: The password of the Nextcloud database user
 dbPassword="$POSTGRES_PASSWORD"
