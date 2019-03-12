@@ -6,10 +6,14 @@ git clone repository
 cd repository
 Create a .env file with
 ```
-POSTGRES_DB=    # choose something other than 'nextcloud'
-POSTGRES_USER=  # choose something other than 'nextcloud'
+POSTGRES_DB=nextcloud_db
+POSTGRES_USER=nextcloud_db_user
 POSTGRES_PASSWORD=
+
+# The url of your website. i.e. nextcloud.dyndns.com
 HOST=
+
+# Your email address for use with Let'sEncrypt
 EMAIL=
 ```
 
