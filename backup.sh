@@ -1,6 +1,3 @@
-# put nextcloud into maintenance mode
-sudo docker-compose exec -u www-data php occ maintenance:mode --on
-
 #!/bin/bash
 
 #
@@ -30,15 +27,19 @@ echo "Backup directory: $backupMainDir"
 
 currentDate=$(date +"%Y%m%d_%H%M%S")
 
+echo "Importing .env"
+source .env
+echo "POSTGRES_DB: $POSTGRES_DB"
+
 # The actual directory of the current backup - this is a subdirectory of the main directory above with a timestamp
-backupdir="${backupMainDir}/${currentDate}/"
+backupdir="${backupMainDir}/${currentDate}"
 
 # TODO: The directory of your Nextcloud installation (this is a directory under your web root)
 nextcloudFileDir="/var/lib/docker/volumes/nextcloud_nextcloud"
 
 # TODO: The directory of your Nextcloud data directory (outside the Nextcloud file directory)
 # If your data directory is located under Nextcloud's file directory (somewhere in the web root), the data directory should not be a separate part of the backup
-# nextcloudDataDir="/var/nextcloud_data"
+# nextcloudDataDir="/var/lib/docker/volumes/nextcloud_nextcloud"
 
 # TODO: The directory of your Nextcloud's local external storage.
 # Uncomment if you use local external storage.
@@ -141,7 +142,7 @@ echo
 # Backup file directory
 #
 echo "Creating backup of Nextcloud file directory..."
-docker-compose exec app tar -cpzf "${backupdir}/${fileNameBackupFileDir}" -C "${nextcloudFileDir}" .
+tar -cpzf "${backupdir}/${fileNameBackupFileDir}" -C "${nextcloudFileDir}" .
 echo "Done"
 echo
 
