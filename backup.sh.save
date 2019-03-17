@@ -15,9 +15,6 @@
 # All entries which need to be customized are tagged with "TODO".
 #
 
-# Function for error messages
-errorecho() { cat <<< "$@" 1>&2; }
-
 # Variables
 backupMainDir=$1
 
@@ -27,11 +24,6 @@ if [ -z "$backupMainDir" ]; then
 fi
 
 echo "Backup directory: $backupMainDir"
-
-if [ ! -d "$backupMainDir" ]; then
-	errorecho "ERROR: Backup directory ${backupMainDir} does not exist."
-	exit 1
-fi
 
 currentDate=$(date +"%Y%m%d_%H%M%S")
 
@@ -47,7 +39,7 @@ nextcloudFileDir="/var/lib/docker/volumes/nextcloud_nextcloud"
 
 # TODO: The directory of your Nextcloud data directory (outside the Nextcloud file directory)
 # If your data directory is located under Nextcloud's file directory (somewhere in the web root), the data directory should not be a separate part of the backup
-# nextcloudDataDir="/var/lib/docker/volumes/nextcloud_nextcloud"
+# nextcloudDataDir="/var/nextcloud_data"
 
 # TODO: The directory of your Nextcloud's local external storage.
 # Uncomment if you use local external storage.
@@ -80,6 +72,9 @@ fileNameBackupFileDir="nextcloud-filedir.tar.gz"
 #fileNameBackupExternalDataDir="nextcloud-external-datadir.tar.gz"
 
 fileNameBackupDb="nextcloud-db.sql"
+
+# Function for error messages
+errorecho() { cat <<< "$@" 1>&2; }
 
 function DisableMaintenanceMode() {
 	echo "Switching off maintenance mode..."
@@ -147,7 +142,7 @@ echo
 # Backup file directory
 #
 echo "Creating backup of Nextcloud file directory..."
-tar -cpzf "${backupdir}/${fileNameBackupFileDir}" -C "${nextcloudFileDir}" .
+docker-compose exec app tar -cpzf "${backupdir}/${fileNameBackupFileDir}" -C "${nextcloudFileDir}" .
 echo "Done"
 echo
 
@@ -174,7 +169,7 @@ echo "Backup Nextcloud database..."
 # mysqldump --single-transaction -h localhost -u "${dbUser}" -p"${dbPassword}" "${nextcloudDatabase}" > "${backupdir}/${fileNameBackupDb}"
 
 # PostgreSQL (uncomment if you are using PostgreSQL as Nextcloud database)
-docker-compose exec db pg_dump "${nextcloudDatabase}" -U "${dbUser}" > "${backupdir}/${fileNameBackupDb}"
+PGPASSWORD="${dbPassword}" pg_dump "${nextcloudDatabase}" -h localhost -U "${dbUser}" -f "${backupdir}/${fileNameBackupDb}"
 echo "Done"
 echo
 
