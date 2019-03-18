@@ -18,12 +18,16 @@
 # Function for error messages
 errorecho() { cat <<< "$@" 1>&2; }
 
+echo "Importing .env"
+source .env
+echo "POSTGRES_DB: $POSTGRES_DB"
+
 # Variables
 backupMainDir=$1
 
 if [ -z "$backupMainDir" ]; then
 	# TODO: The directory where you store the Nextcloud backups (when not specified by args)
-    backupMainDir="/media/russ/silver_hdd/nextcloud_backups"
+    backupMainDir="$BACKUP_DIR"
 fi
 
 echo "Backup directory: $backupMainDir"
@@ -35,51 +39,19 @@ fi
 
 currentDate=$(date +"%Y%m%d_%H%M%S")
 
-echo "Importing .env"
-source .env
-echo "POSTGRES_DB: $POSTGRES_DB"
 
 # The actual directory of the current backup - this is a subdirectory of the main directory above with a timestamp
 backupdir="${backupMainDir}/${currentDate}"
-
-# TODO: The directory of your Nextcloud installation (this is a directory under your web root)
 nextcloudFileDir="/var/lib/docker/volumes/nextcloud_nextcloud"
-
-# TODO: The directory of your Nextcloud data directory (outside the Nextcloud file directory)
-# If your data directory is located under Nextcloud's file directory (somewhere in the web root), the data directory should not be a separate part of the backup
-# nextcloudDataDir="/var/lib/docker/volumes/nextcloud_nextcloud"
-
-# TODO: The directory of your Nextcloud's local external storage.
-# Uncomment if you use local external storage.
-# nextcloudLocalExternalDataDir="/var/nextcloud_external_data"
-
-# TODO: The service name of the web server. Used to start/stop web server (e.g. 'systemctl start <webserverServiceName>')
 webserverServiceName="nginx"
-
-# TODO: Your Nextcloud database name
 nextcloudDatabase="$POSTGRES_DB"
-
-# TODO: Your Nextcloud database user
 dbUser="$POSTGRES_USER"
-
-# TODO: The password of the Nextcloud database user
 dbPassword="$POSTGRES_PASSWORD"
-
-# TODO: Your web server user
 webserverUser="www-data"
-
-# TODO: The maximum number of backups to keep (when set to 0, all backups are kept)
 maxNrOfBackups=7
-
-# File names for backup files
-# If you prefer other file names, you'll also have to change the NextcloudRestore.sh script.
 fileNameBackupFileDir="nextcloud-filedir.tar.gz"
-#fileNameBackupDataDir="nextcloud-datadir.tar.gz"
-
-# TOOD: Uncomment if you use local external storage
-#fileNameBackupExternalDataDir="nextcloud-external-datadir.tar.gz"
-
 fileNameBackupDb="nextcloud-db.sql"
+
 
 function DisableMaintenanceMode() {
 	echo "Switching off maintenance mode..."
@@ -147,24 +119,11 @@ echo
 # Backup file directory
 #
 echo "Creating backup of Nextcloud file directory..."
-tar -cpzf "${backupdir}/${fileNameBackupFileDir}" -C "${nextcloudFileDir}" .
+# tar -cpzf "${backupdir}/${fileNameBackupFileDir}" -C "${nextcloudFileDir}" .
+docker run --rm --volumes-from nextcloud_app_1 -v "${backupdir}":/backup ubuntu tar cvf /backup/"${fileNameBackupFileDir}" /var/www/html
 echo "Done"
 echo
 
-#
-# Backup data directory
-#
-# echo "Creating backup of Nextcloud data directory..."
-# tar -cpzf "${backupdir}/${fileNameBackupDataDir}"  -C "${nextcloudDataDir}" .
-# echo "Done"
-# echo
-
-# Backup local external storage.
-# Uncomment if you use local external storage
-#echo "Creating backup of Nextcloud local external storage directory..."
-#tar -cpzf "${backupdir}/${fileNameBackupExternalDataDir}"  -C "${nextcloudLocalExternalDataDir}" .
-#echo "Done"
-#echo
 
 #
 # Backup DB
