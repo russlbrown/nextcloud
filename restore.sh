@@ -21,7 +21,7 @@ dbUser="$POSTGRES_USER"
 dbPassword="$POSTGRES_PASSWORD"
 webserverUser="www-data"
 fileNameBackupFileDir="nextcloud-filedir.tar.gz"
-fileNameBackupDb="nextcloud-db.sql"
+fileNameBackupDb="nextcloud-db.dump"
 
 
 
@@ -80,23 +80,17 @@ echo
 echo "Deleting old Nextcloud file directory and restoring backup..."
 # rm -r "${nextcloudFileDir}"
 # mkdir -p "${nextcloudFileDir}"
-docker run --rm --volumes-from nextcloud_app_1 -v ${currentRestoreDir}:/backup ubuntu bash -c "cd /var/www/html && rm -rf /var/www/html/* && tar xvf /backup/${fileNameBackupFileDir} --strip 3"
+docker run --rm --volumes-from nextcloud_app_1 -v "${currentRestoreDir}":/backup ubuntu bash -c "cd /var/www/html && rm -rf /var/www/html/* && tar xvf /backup/${fileNameBackupFileDir} --strip 3"
 
 echo "Done"
 echo
 
-
-# #
 # # Restore database
-# #
-# echo "Dropping old Nextcloud DB..."
-# # MySQL/MariaDB:
-# ##mysql -h localhost -u "${dbUser}" -p"${dbPassword}" -e "DROP DATABASE ${nextcloudDatabase}"
-# sudo docker-compose exec db dropdb -U "${dbUser}" "${nextcloudDatabase}"
+ echo "Dropping old Nextcloud DB..."
+ sudo docker-compose exec db dropdb -U "${dbUser}" "${nextcloudDatabase}"
 # # PostgreSQL (uncomment if you are using PostgreSQL as Nextcloud database)
-# echo "Done"
+ echo "Done"
 # echo
-
 
 # echo "Creating new DB for Nextcloud..."
 # # PostgreSQL (uncomment if you are using PostgreSQL as Nextcloud database)
@@ -105,15 +99,13 @@ echo
 # echo "Done"
 # echo
 
-# echo "Restoring backup DB..."
-# # MySQL/MariaDB:
-# # mysql -h localhost -u "${dbUser}" -p"${dbPassword}" "${nextcloudDatabase}" < "${currentRestoreDir}/${fileNameBackupDb}"
-
+echo "Restoring backup DB: ${currentRestoreDir}/${fileNameBackupDb}"
 # # PostgreSQL (uncomment if you are using PostgreSQL as Nextcloud database)
 # # sudo -u postgres psql "${nextcloudDatabase}" < "${currentRestoreDir}/${fileNameBackupDb}"
 # sudo docker-compose exec --user "${dbUser}" db psql "${nextcloudDatabase}" < "${currentRestoreDir}/${fileNameBackupDb}"
-# echo "Done"
-
+docker-compose exec -T -u "${dbuser}" db pg_restore -C -d postgres < "${currentRestoreDir}/${fileNameBackupDb}"
+##docker run --rm --volumes-from nextcloud_db_1 -v "${currentRestoreDir}":/backup postgres:alpine pg_restore -C -d "${nextcloudDatabase}" /backup/"${fileNameBackupDb}"
+echo "Done"
 
 #
 # Start web server ()

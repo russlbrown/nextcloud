@@ -1,4 +1,4 @@
-#!/bin/bash
+ #!/bin/bash
 
 #
 # Bash script for creating backups of Nextcloud.
@@ -50,7 +50,7 @@ dbPassword="$POSTGRES_PASSWORD"
 webserverUser="www-data"
 maxNrOfBackups=7
 fileNameBackupFileDir="nextcloud-filedir.tar.gz"
-fileNameBackupDb="nextcloud-db.sql"
+fileNameBackupDb="nextcloud-db.dump"
 
 
 function DisableMaintenanceMode() {
@@ -124,7 +124,7 @@ docker run --rm --volumes-from nextcloud_app_1 -v "${backupdir}":/backup ubuntu 
 echo "Done"
 echo
 
-
+#### MEAT AND POTATOES #########################################################################################
 #
 # Backup DB
 #
@@ -133,7 +133,9 @@ echo "Backup Nextcloud database..."
 # mysqldump --single-transaction -h localhost -u "${dbUser}" -p"${dbPassword}" "${nextcloudDatabase}" > "${backupdir}/${fileNameBackupDb}"
 
 # PostgreSQL (uncomment if you are using PostgreSQL as Nextcloud database)
-docker-compose exec db pg_dump "${nextcloudDatabase}" -U "${dbUser}" > "${backupdir}/${fileNameBackupDb}"
+#### docker run --rm --volumes-from nextcloud_db_1 -v "${backupdir}":/backup postgres:alpine pg_dump -Fc "${nextcloudDatabase}" -U "${dbUser}" -f /backup/"${fileNameBackupDb}"
+docker-compose exec -T db pg_dump -Fc "${nextcloudDatabase}" -U "${dbUser}" > "${backupdir}/${fileNameBackupDb}"
+## docker-compose exec -u "${dbUser}" db pg_dump -Fc "${nextcloudDatabase}" > "${backupdir}/${fileNameBackupDb}"
 echo "Done"
 echo
 
