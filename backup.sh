@@ -1,4 +1,4 @@
- #!/bin/bash
+#!/bin/bash
 
 #
 # Bash script for creating backups of Nextcloud.
@@ -134,8 +134,38 @@ echo "Backup Nextcloud database..."
 
 # PostgreSQL (uncomment if you are using PostgreSQL as Nextcloud database)
 #### docker run --rm --volumes-from nextcloud_db_1 -v "${backupdir}":/backup postgres:alpine pg_dump -Fc "${nextcloudDatabase}" -U "${dbUser}" -f /backup/"${fileNameBackupDb}"
-docker-compose exec -T db pg_dump -Fc "${nextcloudDatabase}" -U "${dbUser}" > "${backupdir}/${fileNameBackupDb}"
+###docker-compose exec -T db pg_dump -Fc "${nextcloudDatabase}" -U "${dbUser}" > "${backupdir}/${fileNameBackupDb}"
 ## docker-compose exec -u "${dbUser}" db pg_dump -Fc "${nextcloudDatabase}" > "${backupdir}/${fileNameBackupDb}"
+
+# Try 1
+# docker-compose exec -u nextcloud_db_user db pg_dump -Fc nextcloud_db > try1.dump
+# 	unable to find user nextcloud_db_user: no matching entries in passwd file
+
+# Try 2
+# docker-compose exec db pg_dump -U nextcloud_db_user -Fc nextcloud_db > local/try2.dump
+#   This Made what looks like a valid dump. It has lots of special characters in it.
+
+# Try 3
+# docker-compose exec -T db pg_dump -U nextcloud_db_user -Fc nextcloud_db > local/try3.dump
+#   This Made what looks like a valid dump. It has lots of special characters in it.
+
+
+##########################################
+# Try 4 (this worked inside docker)
+docker-compose exec -T db pg_dumpall -U nextcloud_db_user > pg_dumpall_db.sql
+###################################
+
+
+
+## Trying backup and restore from inside a docker shell i.e. backup doesnt leave the container
+
+# This looks promising: pg_restore -U nextcloud_db_user --create --dbname=nextcloud_db < db.dump
+
+# These two commands in succession seem to work. nextcloud broke and didn't recover tough.
+# dropdb -U nextcloud_db_user  nextcloud_db
+# pg_restore -U nextcloud_db_user --create < db.dump
+
+
 echo "Done"
 echo
 
