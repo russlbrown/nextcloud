@@ -50,7 +50,7 @@ nc_db_backup_filename="nextcloud-db.dump"
 
 function DisableMaintenanceMode() {
 	echo "Switching off maintenance mode..."
-	sudo docker-compose exec --user "${webserverUser}" app php occ maintenance:mode --off
+	sudo docker-compose exec -T --user "${webserverUser}" app php occ maintenance:mode --off
 	echo "Done"
 	echo
 }
@@ -93,7 +93,7 @@ fi
 
 # Set maintenance mode
 echo "Set maintenance mode for Nextcloud..."
-sudo docker-compose exec --user "${webserverUser}" app php occ maintenance:mode --on
+sudo docker-compose exec -T --user "${webserverUser}" app php occ maintenance:mode --on
 echo "Done"
 echo
 
